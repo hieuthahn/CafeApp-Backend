@@ -11,7 +11,7 @@ checkDuplicateUsernameOrEmail = (req, res, next) => {
         if (user) {
             res.status(400).send({
                 success: false,
-                message: 'Failed! Username is alreade in use!',
+                message: 'Failed! Username is already in use!',
             })
             return
         }
@@ -33,17 +33,17 @@ checkDuplicateUsernameOrEmail = (req, res, next) => {
 }
 checkRolesExisted = (req, res, next) => {
     if (req.body.roles) {
-        req.body.roles.length.forEach((role) => {
-            if (!ROLES.includes(role)) {
+        for (let i = 0; i < req.body.roles.length; i++) {
+            if (!ROLES.includes(req.body.roles[i])) {
                 res.status(400).send({
                     success: false,
-                    message: `Failed! Roles ${role} does not exist!`,
+                    message: `Failed! Roles ${req.body.roles[i]} does not exist!`,
                 })
+                return
             }
-            return
-        })
+        }
+        next()
     }
-    next()
 }
 const verifySignUp = { checkDuplicateUsernameOrEmail, checkRolesExisted }
 module.exports = verifySignUp
