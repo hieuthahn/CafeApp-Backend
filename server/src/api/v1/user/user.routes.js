@@ -9,15 +9,15 @@ module.exports = (app) => {
         )
         next()
     })
-    app.get('api/v1/user/all', controller.allAccess)
-    app.get('api/v1/user', [authJwt.verifyToken], controller.userBoard)
+    app.get('/api/v1/user/all', controller.allAccess)
+    app.get('/api/v1/user', [authJwt.verifyToken], controller.userBoard)
     app.get(
-        'api/v1/user/mod',
+        '/api/v1/user/mod',
         [authJwt.verifyToken, authJwt.isModerator],
-        controller.modertorBoard,
+        controller.moderatorBoard,
     )
     app.get(
-        'api/v1/user/admin',
+        '/api/v1/user/admin',
         [authJwt.verifyToken, authJwt.isAdmin],
         controller.adminBoard,
     )

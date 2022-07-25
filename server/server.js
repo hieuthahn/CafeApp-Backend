@@ -5,6 +5,7 @@ const db = require('./src/api/database')
 const Role = db.role
 require('dotenv').config()
 const dbConfig = require('./src/api/config/db.config')
+const cookieSession = require('cookie-session')
 
 db.mongoose
     .connect(dbConfig.url, {
@@ -53,10 +54,22 @@ app.use(cors(corsOptions))
 app.use(express.json())
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }))
+app.use(
+    cookieSession({
+        name: 'cafeapp-session',
+        secret: process.env.COOKIE_SECRET,
+        httpOnly: true,
+    }),
+)
 
 // route
 require('./src/api/v1/user/user.routes')(app)
 require('./src/api/v1/auth/auth.routes')(app)
+require('./src/api/v1/region/region.routes')(app)
+require('./src/api/v1/purpose/purpose.routes')(app)
+require('./src/api/v1/tag/tag.routes')(app)
+require('./src/api/v1/benefit/benefit.routes')(app)
+require('./src/api/v1/place/place.routes')(app)
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080

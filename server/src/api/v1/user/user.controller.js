@@ -7,6 +7,6 @@ exports.userBoard = (req, res) => {
 exports.adminBoard = (req, res) => {
     res.status(200).send('Admin Content')
 }
-exports.modertorBoard = (req, res) => {
+exports.moderatorBoard = (req, res) => {
     res.status(200).send('Modertor Content')
 }
