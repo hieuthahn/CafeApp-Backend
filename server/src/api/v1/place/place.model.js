@@ -7,7 +7,7 @@ const PlaceSchema = new mongoose.Schema(
         address: {
             geo: {
                 lat: String,
-                long: String,
+                lng: String,
             },
             region: { type: String, required: true },
             description: { type: String, required: true },

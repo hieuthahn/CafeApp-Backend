@@ -1,4 +1,6 @@
-function toSlug(string) {
+const opencage = require('opencage-api-client')
+
+const toSlug = (string) => {
     // Chuyển hết sang chữ thường
     string = string.toLowerCase()
 
@@ -27,7 +29,7 @@ function toSlug(string) {
     return string
 }
 
-function toLowerCaseTrim(string) {
+const toLowerCaseTrim = (string) => {
     // Chuyển hết sang chữ thường
     string = string.toLowerCase()
 
@@ -87,4 +89,25 @@ const pagination = (c, m) => {
     return rangeWithDots
 }
 
-module.exports = { toSlug, toLowerCaseTrim, pagination }
+const getLatLong = async (
+    address = 'Rua+Cafel%C3%A2ndia%2C+Carapicu%C3%ADba%2C+Brasil&key=91452eadc6824f3da9c9e16a0664a4f7&pretty=1',
+) => {
+    let place
+    await opencage
+        .geocode({
+            key: process.env.OPENCAGE_API_KEY,
+            q: address,
+        })
+        .then((data) => {
+            if (data.results.length > 0) {
+                place = data.results[0]
+            }
+        })
+        .catch((error) => {
+            console.log('Error', error.message)
+        })
+
+    return place.geometry
+}
+
+module.exports = { toSlug, toLowerCaseTrim, pagination, getLatLong }
