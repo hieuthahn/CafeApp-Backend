@@ -9,21 +9,20 @@ const PlaceSchema = new mongoose.Schema(
                 lat: String,
                 lng: String,
             },
-            region: { type: String, required: true },
-            description: { type: String, required: true },
-            direction: String,
+            desc: { type: String, required: true },
+            specific: String,
         },
         intro: String,
         wifi: { name: String, password: String },
         avgRate: Number,
         imageCount: Number,
         openingStatus: String,
-        openingTime: {
+        time: {
             open: String,
             close: String,
         },
         openingType: String,
-        pice: {
+        price: {
             min: Number,
             max: Number,
         },
@@ -37,15 +36,19 @@ const PlaceSchema = new mongoose.Schema(
         },
         phone: String,
         photos: [],
-        benefits: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Benefit',
-            },
-        ],
-        regions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Region' }],
-        tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
-        purposes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Purpose' }],
+        // benefits: [
+        //     {
+        //         type: mongoose.Schema.Types.ObjectId,
+        //         ref: 'Benefit',
+        //     },
+        // ],
+        benefits: [],
+        region: String,
+        tags: [],
+        purposes: [],
+        // regions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Region' }],
+        // tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
+        // purposes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Purpose' }],
         verified: Boolean,
         view: Number,
         rate: {
@@ -59,13 +62,9 @@ const PlaceSchema = new mongoose.Schema(
         metaKeywords: String,
         menu: [],
         isHot: Boolean,
-        social: [
-            {
-                type: String,
-                name: String,
-                link: String,
-            },
-        ],
+        facebook: String,
+        instagram: String,
+        website: String,
         deleted: Boolean,
     },
     {

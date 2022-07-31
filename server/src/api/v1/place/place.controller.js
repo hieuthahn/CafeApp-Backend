@@ -1,29 +1,31 @@
 const db = require('../../database')
 const Place = db.place
-const { toSlug } = require('../helpers/utils')
+const { toSlug, getLatLong } = require('../helpers/utils')
 const { findWithPagination } = require('./place.service')
 const PAGESIZE = db.PAGESIZE
 const opencage = require('opencage-api-client')
-const { getLatLong } = require('../helpers/utils')
 
 exports.create = async (req, res) => {
-    const { description, region } = req.body.address
-    console.log(description)
-    const { lat, lng } = await getLatLong(description)
+    const { desc, specific } = req.body.address
+    // console.log(req.body)
+    const { lat, lng } = await getLatLong(desc)
 
-    const place = new Place({
-        name: req.body.name,
-        slug: toSlug(req.body.name),
-        address: {
-            geo: {
-                lat: lat ? lat : '',
-                lng: lng ? lng : '',
-            },
-            region: region,
-            description: description,
-        },
-        deleted: req.body.deleted ? req.body.deleted : false,
-    })
+    // const place = new Place({
+    //     name: req.body.name,
+    //     slug: toSlug(req.body.name),
+    //     address: {
+    //         geo: {
+    //             lat: lat ? lat : '',
+    //             lng: lng ? lng : '',
+    //         },
+    //         specific: specific,
+    //         desc: desc,
+    //     },
+    //     region: req.body.region,
+    //     deleted: req.body.deleted ? req.body.deleted : false,
+    // })
+
+    const place = new Place(req.body)
 
     try {
         const data = await place.save(place)
