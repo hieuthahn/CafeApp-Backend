@@ -107,7 +107,7 @@ const getLatLong = async (
             console.log('Error', error.message)
         })
 
-    return place.geometry
+    return place?.geometry
 }
 
 module.exports = { toSlug, toLowerCaseTrim, pagination, getLatLong }

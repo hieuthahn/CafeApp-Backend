@@ -54,6 +54,9 @@ app.use(cors(corsOptions))
 app.use(express.json({ limit: '50mb' }))
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }, { limit: '50mb' }))
+// parse requests of content-type - multipart/form-data
+// app.use(express.bodyParser())
+
 app.use(
     cookieSession({
         name: 'cafeapp-session',

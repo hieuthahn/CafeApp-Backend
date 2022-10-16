@@ -2,6 +2,11 @@ const mongoose = require('mongoose')
 
 const PlaceSchema = new mongoose.Schema(
     {
+        status: {
+            type: String,
+            enum: ['pending', 'published', 'rejected'],
+            default: 'pending',
+        },
         name: { type: String, required: true },
         slug: String,
         address: {

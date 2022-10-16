@@ -3,32 +3,39 @@ const Place = db.place
 const { toSlug, getLatLong } = require('../helpers/utils')
 const { findWithPagination } = require('./place.service')
 const PAGESIZE = db.PAGESIZE
-const opencage = require('opencage-api-client')
+const cloudinary = require('cloudinary').v2
 
 exports.create = async (req, res) => {
-    const { desc, specific } = req.body.address
-    // console.log(req.body)
-    const { lat, lng } = await getLatLong(desc)
+    // const { desc, specific } = req.body.address
+    // const { lat, lng } = await getLatLong(desc)
+    const data = JSON.parse(req.body.data)
+    const photos = req.files.photo
+        ? req.files.photo.map((image) => ({
+              url: image?.path,
+              filename: image?.filename,
+              originalName: image?.originalname,
+              size: image?.size,
+          }))
+        : []
+    const menu = req.files.menu
+        ? req.files.menu.map((image) => ({
+              url: image?.path,
+              filename: image?.filename,
+              originalName: image?.originalname,
+              size: image?.size,
+          }))
+        : []
 
-    // const place = new Place({
-    //     name: req.body.name,
-    //     slug: toSlug(req.body.name),
-    //     address: {
-    //         geo: {
-    //             lat: lat ? lat : '',
-    //             lng: lng ? lng : '',
-    //         },
-    //         specific: specific,
-    //         desc: desc,
-    //     },
-    //     region: req.body.region,
-    //     deleted: req.body.deleted ? req.body.deleted : false,
-    // })
-
-    const place = new Place(req.body)
+    const place = new Place({
+        ...data,
+        photos,
+        menu,
+    })
+    // if (req.body.photo)
+    // const place = new Place(req.body)
 
     try {
-        const data = await place.save(place)
+        const data = await Place.create(place)
         if (data) {
             return res.status(200).send({ success: true, data })
         }
@@ -37,9 +44,10 @@ exports.create = async (req, res) => {
             .status(403)
             .send({ success: false, message: 'Can not save to database!' })
     } catch (error) {
-        return res
-            .status(500)
-            .send({ success: false, message: 'Internal server error' })
+        return res.status(500).send({
+            success: false,
+            message: error.message || 'Internal server error',
+        })
     }
 }
 
@@ -71,10 +79,12 @@ exports.findAll = async (req, res) => {
             message: 'Not found Place with name ' + name,
         })
     } catch (error) {
-        console.log(error)
         return res
             .status(500)
-            .send({ success: false, message: 'Internal server error' })
+            .send({
+                success: false,
+                message: error.message || 'Internal server error',
+            })
     }
 }
 
@@ -94,7 +104,25 @@ exports.findOne = async (req, res) => {
 }
 
 exports.update = async (req, res) => {
-    if (!req.body.name) {
+    const data = JSON.parse(req.body.data)
+    const photos =
+        req.files.photo &&
+        req.files.photo.map((image) => ({
+            url: image?.path,
+            filename: image?.filename,
+            originalName: image?.originalname,
+            size: image?.size,
+        }))
+    const menu =
+        req.files.menu &&
+        req.files.menu.map((image) => ({
+            url: image?.path,
+            filename: image?.filename,
+            originalName: image?.originalname,
+            size: image?.size,
+        }))
+
+    if (!data.name) {
         return res.status(400).send({
             success: false,
             message: 'Data to update can not be empty name!',
@@ -102,9 +130,15 @@ exports.update = async (req, res) => {
     }
     const id = req.params.id
     const body = {
-        ...req.body,
-        slug: toSlug(req.body.name),
+        ...data,
     }
+    if (photos) {
+        body.photos = photos
+    }
+    if (menu) {
+        body.menu = menu
+    }
+
     try {
         const data = await Place.findByIdAndUpdate(id, body, {
             useFindAndModify: false,
@@ -128,8 +162,13 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
     const id = req.params.id
+    const files = req.query.files
     try {
         const data = await Place.findByIdAndRemove(id)
+        cloudinary.api.delete_resources(files, (err, result) =>
+            console.log(err, result),
+        )
+
         if (data) {
             return res.status(200).send({
                 success: true,
@@ -150,6 +189,7 @@ exports.delete = async (req, res) => {
 exports.deleteAll = async (req, res) => {
     try {
         const data = await Place.deleteMany({})
+        cloudinary.api.delete_all_resources()
         if (data) {
             return res.status(200).send({
                 success: true,
