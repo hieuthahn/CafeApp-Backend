@@ -16,7 +16,6 @@ exports.create = async (req, res) => {
         isHot: req.body.isHot ? req.body.isHot : false,
         deleted: req.body.deleted ? req.body.deleted : false,
         color: req.body.color ? req.body.color : '',
-        createdAt: Date.now(),
     })
 
     try {

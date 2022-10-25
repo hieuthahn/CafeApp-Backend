@@ -4,9 +4,10 @@ const router = require('express').Router()
 
 module.exports = (app) => {
     // Create a new Region
-    router.post('/', [authJwt.verifyToken], controller.create)
+    // [authJwt.verifyToken]
+    router.post('/', controller.create)
     // Retrieve all Regions
-    router.get('/', [authJwt.verifyToken], controller.findAll)
+    router.get('/', controller.findAll)
     // Retrieve a single Region with id
     router.get('/:id', controller.findOne)
     // Update a Region with id
