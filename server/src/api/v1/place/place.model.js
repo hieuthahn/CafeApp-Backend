@@ -1,4 +1,6 @@
 const mongoose = require('mongoose')
+const slug = require('mongoose-slug-generator')
+mongoose.plugin(slug)
 
 const PlaceSchema = new mongoose.Schema(
     {
@@ -8,7 +10,7 @@ const PlaceSchema = new mongoose.Schema(
             default: 'pending',
         },
         name: { type: String, required: true },
-        slug: String,
+        slug: { type: String, slug: 'name' },
         address: {
             geo: {
                 lat: String,

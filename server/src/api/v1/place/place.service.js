@@ -7,10 +7,15 @@ module.exports = {
         if (!PAGESIZE.includes(pagesize)) {
             pagesize = 10
         }
+        let data = []
         const totalItems = await Place.find(condition).count()
-        const data = await Place.find(condition)
-            .skip((page - 1) * pagesize)
-            .limit(pagesize)
+        if (pagesize === -1) {
+            data = await Place.find(condition)
+        } else {
+            data = await Place.find(condition)
+                .skip((page - 1) * pagesize)
+                .limit(pagesize)
+        }
 
         const totalPages = Math.ceil(+totalItems / pagesize)
 

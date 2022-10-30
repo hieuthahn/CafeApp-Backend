@@ -19,6 +19,9 @@ module.exports = (app) => {
     )
     // Retrieve all Regions
     router.get('/', controller.findAll)
+    // router.get('/', controller.findAllAndUpdate)
+    // Search Place
+    router.post('/search', controller.search)
     // Retrieve a single Region with id
     router.get('/:id', controller.findOne)
     // Update a Region with id
@@ -36,8 +39,6 @@ module.exports = (app) => {
     router.delete('/:id', controller.delete)
     // Create a new Region
     router.delete('/', controller.deleteAll)
-    // Search Place
-    router.post('/search', controller.search)
 
     app.use('/api/v1/place', router)
 }

@@ -54,7 +54,6 @@ exports.create = async (req, res) => {
 exports.findAll = async (req, res) => {
     const name = req.query.name
     const { page = 1, pagesize } = req.query
-
     const condition = name
         ? { name: { $regex: new RegExp(name), $options: 'i' } }
         : {}
@@ -87,24 +86,31 @@ exports.findAll = async (req, res) => {
 }
 
 exports.findOne = async (req, res) => {
-    const id = req.params.id
+    const id = req.params?.id
+
     try {
-        const data = await Place.findById(id)
-        if (data) {
-            return res.status(200).send({ success: true, data })
+        let data = []
+        if (id.match(/^[0-9a-fA-F]{24}$/)) {
+            data = await Place.findById(id)
+        } else {
+            data = await Place.find({ slug: id })
         }
+        if (data.length) {
+            return res.status(200).send({ success: true, data: data[0] })
+        }
+
         return res
-            .status(404)
-            .send({ success: false, message: 'Not found Place with id ' + id })
+            .status(200)
+            .send({ success: false, message: 'Not found Place with ' + id })
     } catch (error) {
         return res.status(500).send({ success: false, message: error })
     }
 }
 
 exports.update = async (req, res) => {
-    const data = JSON.parse(req.body.data)
+    const data = JSON.parse(req.body?.data || null)
     const photos =
-        req.files.photo &&
+        req?.files?.photo &&
         req.files.photo.map((image) => ({
             url: image?.path,
             filename: image?.filename,
@@ -112,7 +118,7 @@ exports.update = async (req, res) => {
             size: image?.size,
         }))
     const menu =
-        req.files.menu &&
+        req?.files?.menu &&
         req.files.menu.map((image) => ({
             url: image?.path,
             filename: image?.filename,
@@ -253,6 +259,44 @@ exports.search = async (req, res) => {
         return res.status(500).send({
             success: false,
             message: 'Internal server error ' + error,
+        })
+    }
+}
+
+exports.findAllAndUpdate = async (req, res) => {
+    const name = req.query.name
+    const { page = 1, pagesize } = req.query
+
+    const condition = name
+        ? { name: { $regex: new RegExp(name), $options: 'i' } }
+        : {}
+    try {
+        const places = await Place.find()
+        let count = 0
+        if (places) {
+            places.forEach(async (item) => {
+                try {
+                    const data = await Place.updateOne(
+                        { _id: item._id },
+                        { slug: toSlug(item.name) },
+                    )
+                    if (data) {
+                        count++
+                    }
+                } catch (error) {
+                    throw new Error(error)
+                }
+            })
+        }
+
+        return res.status(200).send({
+            success: true,
+            message: 'Update success ' + count,
+        })
+    } catch (error) {
+        return res.status(500).send({
+            success: false,
+            message: error.message || 'Internal server error',
         })
     }
 }
