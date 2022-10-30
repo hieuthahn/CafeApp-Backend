@@ -79,12 +79,10 @@ exports.findAll = async (req, res) => {
             message: 'Not found Place with name ' + name,
         })
     } catch (error) {
-        return res
-            .status(500)
-            .send({
-                success: false,
-                message: error.message || 'Internal server error',
-            })
+        return res.status(500).send({
+            success: false,
+            message: error.message || 'Internal server error',
+        })
     }
 }
 
@@ -207,25 +205,44 @@ exports.deleteAll = async (req, res) => {
 }
 
 exports.search = async (req, res) => {
-    const { name, page, benefits, regions, tags, opening, price } = req.body
-    const slugName = toSlug(name)
+    const {
+        name,
+        page = 1,
+        pagesize = 10,
+        benefits,
+        regions,
+        tags,
+        opening,
+        price,
+    } = req.body
+    const slugName = name ? toSlug(name) : ''
 
     const condition = name
         ? { name: { $regex: new RegExp(name), $options: 'i' } }
         : {}
     const filter = {
         slug: slugName ? { $regex: new RegExp(name), $options: 'i' } : null,
-        page: page ? page : 1,
-        benefits: slugName ? { $regex: new RegExp(name), $options: 'i' } : '',
-        regions: slugName ? { $regex: new RegExp(name), $options: 'i' } : '',
-        tags: slugName ? { $regex: new RegExp(name), $options: 'i' } : '',
+        benefits: slugName ? { $regex: new RegExp(name), $options: 'i' } : null,
+        regions: slugName ? { $regex: new RegExp(name), $options: 'i' } : null,
+        tags: slugName ? { $regex: new RegExp(name), $options: 'i' } : null,
         opening: opening ? opening : null,
         price: price ? price : null,
     }
+
     try {
-        const data = await Place.find(filter)
+        const { data, totalPages, currentPage, pageSize } =
+            await findWithPagination(null, +page, +pagesize)
+
         if (data) {
-            return res.status(200).send({ success: true, data })
+            return res.status(200).send({
+                success: true,
+                data,
+                meta: {
+                    totalPages,
+                    currentPage,
+                    pageSize,
+                },
+            })
         }
 
         return res.status(404).send({
@@ -233,8 +250,9 @@ exports.search = async (req, res) => {
             message: 'Not found Place with name ' + name,
         })
     } catch (error) {
-        return res
-            .status(500)
-            .send({ success: false, message: 'Internal server error' })
+        return res.status(500).send({
+            success: false,
+            message: 'Internal server error ' + error,
+        })
     }
 }
