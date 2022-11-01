@@ -220,24 +220,25 @@ exports.search = async (req, res) => {
         tags,
         opening,
         price,
+        sort,
     } = req.body
     const slugName = name ? toSlug(name) : ''
-
-    const condition = name
-        ? { name: { $regex: new RegExp(name), $options: 'i' } }
-        : {}
     const filter = {
-        slug: slugName ? { $regex: new RegExp(name), $options: 'i' } : null,
-        benefits: slugName ? { $regex: new RegExp(name), $options: 'i' } : null,
-        regions: slugName ? { $regex: new RegExp(name), $options: 'i' } : null,
-        tags: slugName ? { $regex: new RegExp(name), $options: 'i' } : null,
-        opening: opening ? opening : null,
-        price: price ? price : null,
+        // name: name ? { $regex: name, $options: 'i' } : undefined,
+        // benefits: slugName ? { $regex: new RegExp(name), $options: 'i' } : '',
+        // regions: slugName ? { $regex: new RegExp(name), $options: 'i' } : '',
+        // tags: slugName ? { $regex: new RegExp(name), $options: 'i' } : '',
+        // opening: opening ? opening : '',
+        // price: price ? price : '',
+    }
+
+    if (name) {
+        filter.name = { $regex: name, $options: 'i' }
     }
 
     try {
-        const { data, totalPages, currentPage, pageSize } =
-            await findWithPagination(null, +page, +pagesize)
+        const { data, totalPages, currentPage, pageSize, totalItems } =
+            await findWithPagination(filter, +page, +pagesize, sort)
 
         if (data) {
             return res.status(200).send({
@@ -247,6 +248,7 @@ exports.search = async (req, res) => {
                     totalPages,
                     currentPage,
                     pageSize,
+                    totalItems,
                 },
             })
         }

@@ -11,5 +11,5 @@ db.tag = require('../v1/tag/tag.model')
 db.purpose = require('../v1/purpose/purpose.model')
 db.place = require('../v1/place/place.model')
 db.ROLES = ['user', 'admin', 'moderator']
-db.PAGESIZE = [-1, 1, 2, 3, 10, 20, 30]
+db.PAGESIZE = [-1, 1, 2, 3, 8, 10, 20, 30]
 module.exports = db
