@@ -5,7 +5,7 @@ const User = db.user
 const Role = db.role
 
 verifyToken = (req, res, next) => {
-    let token = req.session.token
+    let token = req.header('authorization')?.slice(6) || req.session.token
     if (!token) {
         return res
             .status(403)
@@ -15,7 +15,7 @@ verifyToken = (req, res, next) => {
         if (err) {
             return res.status(401).send({
                 success: false,
-                message: 'Unauthorized!',
+                message: 'Unauthorized! ' + err,
             })
         }
         req.userId = decoded.id

@@ -3,7 +3,7 @@ const validator = require('validator')
 module.exports = {
     checkRequired: (req, res, next) => {
         const { isEmpty } = validator
-        const data = JSON.parse(req.body.data)
+        const data = req.body.data ? JSON.parse(req.body.data) : {}
         if (!data.name) {
             return res.status(400).send({
                 success: false,
@@ -25,7 +25,7 @@ module.exports = {
             })
         }
 
-        if (!data.address.desc) {
+        if (!data.address.specific) {
             return res.status(400).send({
                 success: false,
                 message: 'Place description can not be empty!',

@@ -110,4 +110,29 @@ const getLatLong = async (
     return place?.geometry
 }
 
-module.exports = { toSlug, toLowerCaseTrim, pagination, getLatLong }
+const getTotalRateAvg = (reviews, totalItems) => {
+    const total = reviews.reduce((total, review) => {
+        return (total = total + review.rate.avg)
+    }, 0)
+
+    const result = (total / totalItems).toFixed(1)
+    return +result || 0
+}
+
+const getRateAvg = (rate) => {
+    const total = Object.keys(rate).reduce((total, key) => {
+        return (total = total + rate[key])
+    }, 0)
+
+    const result = (total / Object.keys(rate).length).toFixed(1)
+    return +result || 0
+}
+
+module.exports = {
+    toSlug,
+    toLowerCaseTrim,
+    pagination,
+    getLatLong,
+    getTotalRateAvg,
+    getRateAvg,
+}

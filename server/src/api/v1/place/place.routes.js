@@ -9,11 +9,12 @@ module.exports = (app) => {
     router.post(
         '/',
         [
+            authJwt.verifyToken,
+            validation.checkRequired,
             uploadCloud.fields([
                 { name: 'photo', maxCount: 20 },
                 { name: 'menu', maxCount: 20 },
             ]),
-            validation.checkRequired,
         ],
         controller.create,
     )
@@ -28,6 +29,8 @@ module.exports = (app) => {
     router.put(
         '/:id',
         [
+            authJwt.verifyToken,
+            authJwt.isAdmin,
             uploadCloud.fields([
                 { name: 'photo', maxCount: 20 },
                 { name: 'menu', maxCount: 20 },
@@ -36,9 +39,17 @@ module.exports = (app) => {
         controller.update,
     )
     // Delete a Region with id
-    router.delete('/:id', controller.delete)
+    router.delete(
+        '/:id',
+        [authJwt.verifyToken, authJwt.isAdmin],
+        controller.delete,
+    )
     // Create a new Region
-    router.delete('/', controller.deleteAll)
+    router.delete(
+        '/',
+        [authJwt.verifyToken, authJwt.isAdmin],
+        controller.deleteAll,
+    )
 
     app.use('/api/v1/place', router)
 }

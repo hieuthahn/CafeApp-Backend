@@ -1,6 +1,6 @@
 const db = require('../../database')
 const PAGESIZE = db.PAGESIZE
-const Place = db.place
+const Review = db.review
 
 module.exports = {
     findWithPagination: async (condition, page = 1, pagesize = 2, sort) => {
@@ -8,12 +8,12 @@ module.exports = {
             pagesize = 10
         }
         let data = []
-        const totalItems = await Place.find(condition).count()
+        const totalItems = await Review.find(condition).count()
         if (pagesize === -1) {
-            data = await Place.find(condition).populate('author').sort(sort)
+            data = await Review.find(condition).populate('author').sort(sort)
         } else {
-            data = await Place.find(condition)
-                .populate('author', ['username'])
+            data = await Review.find(condition)
+                .populate('author', ['-password', '-email'])
                 .sort(sort)
                 .skip((page - 1) * pagesize)
                 .limit(pagesize)

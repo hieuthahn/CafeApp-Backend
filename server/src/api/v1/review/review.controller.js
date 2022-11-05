@@ -1,16 +1,23 @@
 const db = require('../../database')
-const Place = db.place
+const Review = db.review
 const { toSlug, getLatLong } = require('../helpers/utils')
-const { findWithPagination } = require('./place.service')
+const { findWithPagination } = require('./review.service')
 const PAGESIZE = db.PAGESIZE
 const cloudinary = require('cloudinary').v2
+const { getRateAvg } = require('../helpers/utils')
+var moment = require('moment')
+moment.locale('vi')
 
 exports.create = async (req, res) => {
-    // const { desc, specific } = req.body.address
-    // const { lat, lng } = await getLatLong(desc)
-    const data = JSON.parse(req.body.data)
-    console.log(req.userId)
-    const photos = req.files.photo
+    const data = req.body?.data ? JSON.parse(req.body.data) : {}
+    if (!data) {
+        return res.status(403).send({
+            success: false,
+            message: 'Data can not be empty',
+        })
+    }
+
+    const photos = req?.files?.photo
         ? req.files.photo.map((image) => ({
               url: image?.path,
               filename: image?.filename,
@@ -18,37 +25,32 @@ exports.create = async (req, res) => {
               size: image?.size,
           }))
         : []
-    const menu = req.files.menu
-        ? req.files.menu.map((image) => ({
-              url: image?.path,
-              filename: image?.filename,
-              originalName: image?.originalname,
-              size: image?.size,
-          }))
-        : []
 
-    const place = new Place({
+    if (data?.rate) {
+        const avg = getRateAvg(data.rate)
+        data.rate.avg = avg
+    }
+
+    const review = new Review({
         ...data,
         author: req?.userId,
         photos,
-        menu,
     })
-    // if (req.body.photo)
-    // const place = new Place(req.body)
 
     try {
-        const data = await Place.create(place)
+        const data = await Review.create(review)
         if (data) {
             return res.status(200).send({ success: true, data })
         }
 
-        return res
-            .status(403)
-            .send({ success: false, message: 'Can not save to database!' })
+        return res.status(403).send({
+            success: false,
+            message: 'Can not save to database!' + data,
+        })
     } catch (error) {
         return res.status(500).send({
             success: false,
-            message: error.message || 'Internal server error',
+            message: error.message || 'Internal server error' + error,
         })
     }
 }
@@ -77,7 +79,7 @@ exports.findAll = async (req, res) => {
 
         return res.status(404).send({
             success: false,
-            message: 'Not found Place with name ' + name,
+            message: 'Not found Review with name ' + name,
         })
     } catch (error) {
         return res.status(500).send({
@@ -87,35 +89,42 @@ exports.findAll = async (req, res) => {
     }
 }
 
-exports.findOne = async (req, res) => {
-    const id = req.params?.id
+exports.findByPlaceId = async (req, res) => {
+    const placeId = req.params?.placeId
+    const { page = 1, pagesize } = req.query
 
     try {
-        let data = []
-        if (id.match(/^[0-9a-fA-F]{24}$/)) {
-            data = await Place.findById(id)
+        if (placeId.match(/^[0-9a-fA-F]{24}$/)) {
+            const { data, totalPages, currentPage, pageSize, totalItems } =
+                await findWithPagination({ place: placeId }, +page, +pagesize)
+            if (data) {
+                return res.status(200).send({
+                    success: true,
+                    data,
+                    meta: {
+                        totalPages,
+                        currentPage,
+                        pageSize,
+                        totalItems,
+                    },
+                })
+            }
         } else {
-            data = await Place.find({ slug: id })
-        }
-
-        if (data?._id) {
-            return res.status(200).send({ success: true, data })
-        }
-
-        if (data.length) {
-            return res.status(200).send({ success: true, data: data[0] })
+            return res
+                .status(400)
+                .send({ success: false, message: 'Id bài viết không hợp lệ' })
         }
 
         return res
             .status(200)
-            .send({ success: false, message: 'Not found Place with ' + id })
+            .send({ success: false, message: 'Not found Review with ' + id })
     } catch (error) {
         return res.status(500).send({ success: false, message: error })
     }
 }
 
 exports.update = async (req, res) => {
-    const data = JSON.parse(req.body?.data || null)
+    const data = req.body?.data ? JSON.parse(req.body.data) : {}
     const photos =
         req?.files?.photo &&
         req.files.photo.map((image) => ({
@@ -124,45 +133,33 @@ exports.update = async (req, res) => {
             originalName: image?.originalname,
             size: image?.size,
         }))
-    const menu =
-        req?.files?.menu &&
-        req.files.menu.map((image) => ({
-            url: image?.path,
-            filename: image?.filename,
-            originalName: image?.originalname,
-            size: image?.size,
-        }))
 
-    if (!data.name) {
-        return res.status(400).send({
-            success: false,
-            message: 'Data to update can not be empty name!',
-        })
-    }
     const id = req.params.id
     const body = {
         ...data,
     }
+    if (data?.rate) {
+        const avg = getRateAvg(data.rate)
+        data.rate.avg = avg
+    }
+
     if (photos) {
         body.photos = photos
     }
-    if (menu) {
-        body.menu = menu
-    }
 
     try {
-        const data = await Place.findByIdAndUpdate(id, body, {
+        const data = await Review.findByIdAndUpdate(id, body, {
             useFindAndModify: false,
         })
         if (data) {
             return res.status(200).send({
                 success: true,
-                message: 'Place was updated successfully.',
+                message: 'Review was updated successfully.',
             })
         }
         return res.status(404).send({
             success: false,
-            message: `Can not update Place with id=${id}.`,
+            message: `Can not update Review with id=${id}.`,
         })
     } catch (error) {
         return res
@@ -173,43 +170,45 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
     const id = req.params.id
-    const files = req.query.files
+    const files = req.query?.files || []
     try {
-        const data = await Place.findByIdAndRemove(id)
-        cloudinary.api.delete_resources(files, (err, result) =>
-            console.log(err, result),
-        )
+        const data = await Review.findByIdAndRemove(id)
+        if (files.length) {
+            cloudinary.api.delete_resources(files, (err, result) =>
+                console.log(err, result),
+            )
+        }
 
         if (data) {
             return res.status(200).send({
                 success: true,
-                message: 'Place was deleted successfully!',
+                message: 'Review was deleted successfully!',
             })
         }
         return res.status(404).send({
             success: false,
-            message: `Can not delete Place with id=${id}.`,
+            message: `Can not delete Review with id=${id}.`,
         })
     } catch (error) {
         return res
             .status(500)
-            .send({ success: false, message: 'Internal server error' })
+            .send({ success: false, message: 'Internal server error' + error })
     }
 }
 
 exports.deleteAll = async (req, res) => {
     try {
-        const data = await Place.deleteMany({})
+        const data = await Review.deleteMany({})
         cloudinary.api.delete_all_resources()
         if (data) {
             return res.status(200).send({
                 success: true,
-                message: 'All Places was deleted successfully!',
+                message: 'All Reviews was deleted successfully!',
             })
         }
         return res
             .status(400)
-            .send({ success: false, message: 'Can not delete Places!' })
+            .send({ success: false, message: 'Can not delete Reviews!' })
     } catch (error) {
         return res
             .status(500)
@@ -262,7 +261,7 @@ exports.search = async (req, res) => {
 
         return res.status(404).send({
             success: false,
-            message: 'Not found Place with name ' + name,
+            message: 'Not found Review with name ' + name,
         })
     } catch (error) {
         return res.status(500).send({
@@ -280,12 +279,12 @@ exports.findAllAndUpdate = async (req, res) => {
         ? { name: { $regex: new RegExp(name), $options: 'i' } }
         : {}
     try {
-        const places = await Place.find()
+        const Reviews = await Review.find()
         let count = 0
-        if (places) {
-            places.forEach(async (item) => {
+        if (Reviews) {
+            Reviews.forEach(async (item) => {
                 try {
-                    const data = await Place.updateOne(
+                    const data = await Review.updateOne(
                         { _id: item._id },
                         { slug: toSlug(item.name) },
                     )

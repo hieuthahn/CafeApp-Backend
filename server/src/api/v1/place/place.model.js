@@ -4,6 +4,10 @@ mongoose.plugin(slug)
 
 const PlaceSchema = new mongoose.Schema(
     {
+        author: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        },
         status: {
             type: String,
             enum: ['pending', 'published', 'rejected'],
@@ -16,8 +20,8 @@ const PlaceSchema = new mongoose.Schema(
                 lat: String,
                 lng: String,
             },
-            desc: { type: String, required: true },
-            specific: String,
+            desc: String,
+            specific: { type: String, required: true },
         },
         intro: String,
         wifi: { name: String, password: String },
@@ -69,6 +73,7 @@ const PlaceSchema = new mongoose.Schema(
         metaKeywords: String,
         menu: [],
         isHot: Boolean,
+        email: String,
         facebook: String,
         instagram: String,
         website: String,

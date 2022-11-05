@@ -6,6 +6,7 @@ const Role = db.role
 require('dotenv').config()
 const dbConfig = require('./src/api/config/db.config')
 const cookieSession = require('cookie-session')
+const bodyParser = require('body-parser')
 
 db.mongoose
     .connect(dbConfig.url, {
@@ -51,11 +52,11 @@ var corsOptions = {
 }
 app.use(cors(corsOptions))
 // parse requests of content-type - application/json
-app.use(express.json({ limit: '50mb' }))
+app.use(bodyParser.json({ limit: '50mb' }))
 // parse requests of content-type - application/x-www-form-urlencoded
-app.use(express.urlencoded({ extended: true }, { limit: '50mb' }))
+app.use(bodyParser.urlencoded({ extended: true }, { limit: '50mb' }))
 // parse requests of content-type - multipart/form-data
-// app.use(express.bodyParser())
+// app.use(bodyParser())
 
 app.use(
     cookieSession({
@@ -73,6 +74,7 @@ require('./src/api/v1/purpose/purpose.routes')(app)
 require('./src/api/v1/tag/tag.routes')(app)
 require('./src/api/v1/benefit/benefit.routes')(app)
 require('./src/api/v1/place/place.routes')(app)
+require('./src/api/v1/review/review.routes')(app)
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080
