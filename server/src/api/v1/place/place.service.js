@@ -10,7 +10,9 @@ module.exports = {
         let data = []
         const totalItems = await Place.find(condition).count()
         if (pagesize === -1) {
-            data = await Place.find(condition).populate('author').sort(sort)
+            data = await Place.find(condition)
+                .populate('author', ['username'])
+                .sort(sort)
         } else {
             data = await Place.find(condition)
                 .populate('author', ['username'])

@@ -10,11 +10,11 @@ module.exports = (app) => {
         '/',
         [
             authJwt.verifyToken,
-            validation.checkRequired,
             uploadCloud.fields([
                 { name: 'photo', maxCount: 20 },
                 { name: 'menu', maxCount: 20 },
             ]),
+            validation.checkRequired,
         ],
         controller.create,
     )

@@ -1,5 +1,9 @@
 const db = require('../../database')
 const Place = db.place
+const Region = db.region
+const Purpose = db.purpose
+const Tag = db.tag
+const Benefit = db.benefit
 const { toSlug, getLatLong } = require('../helpers/utils')
 const { findWithPagination } = require('./place.service')
 const PAGESIZE = db.PAGESIZE
@@ -220,27 +224,51 @@ exports.deleteAll = async (req, res) => {
 exports.search = async (req, res) => {
     const {
         name,
+        status,
         page = 1,
         pagesize = 10,
         benefits,
+        purposes,
         regions,
         tags,
         opening,
         price,
         sort,
     } = req.body
-    const slugName = name ? toSlug(name) : ''
-    const filter = {
-        // name: name ? { $regex: name, $options: 'i' } : undefined,
-        // benefits: slugName ? { $regex: new RegExp(name), $options: 'i' } : '',
-        // regions: slugName ? { $regex: new RegExp(name), $options: 'i' } : '',
-        // tags: slugName ? { $regex: new RegExp(name), $options: 'i' } : '',
-        // opening: opening ? opening : '',
-        // price: price ? price : '',
-    }
+
+    let filter = {}
 
     if (name) {
         filter.name = { $regex: name, $options: 'i' }
+    }
+    if (status?.length) {
+        filter.status = { $in: status }
+    }
+    if (benefits?.length) {
+        filter.benefits = { $in: benefits }
+    }
+    if (tags?.length) {
+        filter.tags = { $in: tags }
+    }
+    if (purposes?.length) {
+        filter.purposes = { $in: purposes }
+    }
+    if (regions?.length) {
+        filter.region = { $in: regions }
+    }
+
+    if (price?.min?.toString() && price?.max?.toString()) {
+        filter = {
+            ...filter,
+            'price.min': {
+                $lte: +price?.max,
+                $gte: +price?.min,
+            },
+            'price.max': {
+                $gte: +price?.min,
+                $lte: +price?.max,
+            },
+        }
     }
 
     try {
@@ -281,16 +309,26 @@ exports.findAllAndUpdate = async (req, res) => {
         : {}
     try {
         const places = await Place.find()
+        const purposes = await Purpose.find()
+
+        const n = [3, 4]
         let count = 0
         if (places) {
             places.forEach(async (item) => {
                 try {
-                    const data = await Place.updateOne(
-                        { _id: item._id },
-                        { slug: toSlug(item.name) },
-                    )
-                    if (data) {
-                        count++
+                    if (item?.address?.specific) {
+                        const random = Math.floor(Math.random() * n.length)
+                        const shuffledName = purposes.map((item) => item.name)
+                        const shuffled = shuffledName.sort(
+                            () => 0.5 - Math.random(),
+                        )
+                        const data = await Place.updateOne(
+                            { _id: item._id },
+                            {
+                                purposes: shuffled.slice(0, n[random]),
+                            },
+                        )
+                        count += 1
                     }
                 } catch (error) {
                     throw new Error(error)
