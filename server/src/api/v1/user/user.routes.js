@@ -1,5 +1,7 @@
 const { authJwt } = require('../middleware')
 const controller = require('./user.controller')
+const router = require('express').Router()
+const uploadCloud = require('../../config/cloundinary.config')
 
 module.exports = (app) => {
     app.use((req, res, next) => {
@@ -9,16 +11,29 @@ module.exports = (app) => {
         )
         next()
     })
-    app.get('/api/v1/user/all', controller.allAccess)
-    app.get('/api/v1/user', [authJwt.verifyToken], controller.userBoard)
-    app.get(
-        '/api/v1/user/mod',
+
+    router.get('/all', controller.allAccess)
+    router.get('/', [authJwt.verifyToken], controller.findOne)
+    router.get(
+        '/mod',
         [authJwt.verifyToken, authJwt.isModerator],
         controller.moderatorBoard,
     )
-    app.get(
-        '/api/v1/user/admin',
+    router.get(
+        '/admin',
         [authJwt.verifyToken, authJwt.isAdmin],
         controller.adminBoard,
     )
+
+    router.put('/', [authJwt.verifyToken], controller.update)
+    router.put(
+        '/avatar',
+        [
+            authJwt.verifyToken,
+            uploadCloud.fields([{ name: 'avatar', maxCount: 1 }]),
+        ],
+        controller.updateAvatar,
+    )
+
+    app.use('/api/v1/profile', router)
 }

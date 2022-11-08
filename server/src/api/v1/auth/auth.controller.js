@@ -10,6 +10,7 @@ const mongoose = require('mongoose')
 exports.signup = (req, res, next) => {
     const user = new User({
         username: req.body.username,
+        name: req.body.name,
         email: req.body.email,
         password: bcrypt.hashSync(req.body.password, 8),
         avatar: '',
@@ -68,6 +69,7 @@ exports.signup = (req, res, next) => {
         }
     })
 }
+
 exports.signin = (req, res) => {
     User.findOne({
         username: req.body.username,
@@ -113,7 +115,7 @@ exports.signin = (req, res) => {
             let auth = await Auth.saveRefreshToken(user, refreshToken)
             const authorities = []
             user.roles.forEach((role) => {
-                authorities.push('ROLE_' + role.name.toUpperCase())
+                authorities.push(role.name.toUpperCase())
             })
 
             req.session.token = token
@@ -123,6 +125,7 @@ exports.signin = (req, res) => {
                 success: true,
                 id: user._id,
                 username: user.username,
+                name: user.name,
                 email: user.email,
                 roles: authorities,
                 avatar: user.avatar,
