@@ -62,17 +62,16 @@ exports.findAll = async (req, res) => {
         ? { name: { $regex: new RegExp(name), $options: 'i' } }
         : {}
     try {
-        const { data, totalPages, currentPage, pageSize } =
-            await findWithPagination(condition, +page, +pageSize)
+        const result = await findWithPagination(condition, +page, +pageSize)
 
-        if (data) {
+        if (result.data) {
             return res.status(200).send({
                 success: true,
-                data,
+                data: result.data,
                 meta: {
-                    totalPages,
-                    currentPage,
-                    pageSize,
+                    totalPages: res.totalPages,
+                    currentPage: result.currentPage,
+                    pageSize: result.pageSize,
                 },
             })
         }
@@ -95,17 +94,16 @@ exports.findByPlaceId = async (req, res) => {
 
     try {
         if (placeId.match(/^[0-9a-fA-F]{24}$/)) {
-            const { data, totalPages, currentPage, pageSize, totalItems } =
-                await findWithPagination({ place: placeId }, +page, +pageSize)
-            if (data) {
+            const result = await findWithPagination(condition, +page, +pageSize)
+
+            if (result.data) {
                 return res.status(200).send({
                     success: true,
-                    data,
+                    data: result.data,
                     meta: {
-                        totalPages,
-                        currentPage,
-                        pageSize,
-                        totalItems,
+                        totalPages: result.totalPages,
+                        currentPage: result.currentPage,
+                        pageSize: result.pageSize,
                     },
                 })
             }
@@ -243,18 +241,16 @@ exports.search = async (req, res) => {
     }
 
     try {
-        const { data, totalPages, currentPage, pageSize, totalItems } =
-            await findWithPagination(filter, +page, +pageSize, sort)
+        const result = await findWithPagination(condition, +page, +pageSize)
 
-        if (data) {
+        if (result.data) {
             return res.status(200).send({
                 success: true,
-                data,
+                data: result.data,
                 meta: {
-                    totalPages,
-                    currentPage,
-                    pageSize,
-                    totalItems,
+                    totalPages: result.totalPages,
+                    currentPage: result.currentPage,
+                    pageSize: result.pageSize,
                 },
             })
         }
