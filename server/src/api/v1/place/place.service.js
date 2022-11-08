@@ -3,13 +3,13 @@ const PAGESIZE = db.PAGESIZE
 const Place = db.place
 
 module.exports = {
-    findWithPagination: async (condition, page = 1, pagesize = 2, sort) => {
-        if (!PAGESIZE.includes(pagesize)) {
-            pagesize = 10
+    findWithPagination: async (condition, page = 1, pageSize = 2, sort) => {
+        if (!PAGESIZE.includes(pageSize)) {
+            pageSize = 10
         }
         let data = []
         const totalItems = await Place.find(condition).count()
-        if (pagesize === -1) {
+        if (pageSize === -1) {
             data = await Place.find(condition)
                 .populate('author', ['username'])
                 .sort(sort)
@@ -17,17 +17,17 @@ module.exports = {
             data = await Place.find(condition)
                 .populate('author', ['username'])
                 .sort(sort)
-                .skip((page - 1) * pagesize)
-                .limit(pagesize)
+                .skip((page - 1) * pageSize)
+                .limit(pageSize)
         }
 
-        const totalPages = Math.ceil(+totalItems / pagesize)
+        const totalPages = Math.ceil(+totalItems / pageSize)
 
         return {
             data,
             totalPages,
             currentPage: page,
-            pageSize: pagesize,
+            pageSize: pageSize,
             totalItems,
         }
     },

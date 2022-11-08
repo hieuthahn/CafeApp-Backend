@@ -1,5 +1,6 @@
 const db = require('../../database')
 const Region = db.region
+const Place = db.place
 const { toSlug } = require('../helpers/utils')
 
 exports.create = async (req, res) => {
@@ -39,8 +40,10 @@ exports.findAll = async (req, res) => {
     const condition = name
         ? { name: { $regex: new RegExp(name), $options: 'i' } }
         : {}
+
     try {
-        const data = await Region.find(condition)
+        let data = await Region.find(condition)
+
         if (data) {
             return res.status(200).send({ success: true, data })
         }

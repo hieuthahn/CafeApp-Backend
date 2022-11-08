@@ -59,13 +59,13 @@ exports.create = async (req, res) => {
 
 exports.findAll = async (req, res) => {
     const name = req.query.name
-    const { page = 1, pagesize } = req.query
+    const { page = 1, pageSize } = req.query
     const condition = name
         ? { name: { $regex: new RegExp(name), $options: 'i' } }
         : {}
     try {
         const { data, totalPages, currentPage, pageSize } =
-            await findWithPagination(condition, +page, +pagesize)
+            await findWithPagination(condition, +page, +pageSize)
 
         if (data) {
             return res.status(200).send({
@@ -226,7 +226,7 @@ exports.search = async (req, res) => {
         name,
         status,
         page = 1,
-        pagesize = 10,
+        pageSize = 10,
         benefits,
         purposes,
         regions,
@@ -273,7 +273,7 @@ exports.search = async (req, res) => {
 
     try {
         const { data, totalPages, currentPage, pageSize, totalItems } =
-            await findWithPagination(filter, +page, +pagesize, sort)
+            await findWithPagination(filter, +page, +pageSize, sort)
 
         if (data) {
             return res.status(200).send({
@@ -302,7 +302,7 @@ exports.search = async (req, res) => {
 
 exports.findAllAndUpdate = async (req, res) => {
     const name = req.query.name
-    const { page = 1, pagesize } = req.query
+    const { page = 1, pageSize } = req.query
 
     const condition = name
         ? { name: { $regex: new RegExp(name), $options: 'i' } }
