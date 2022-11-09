@@ -4,8 +4,8 @@ const Review = mongoose.model(
     'Review',
     new mongoose.Schema(
         {
-            title: { type: 'string', required: true },
-            content: { type: 'string', required: true },
+            title: { type: String, required: true },
+            content: { type: String, required: true },
             rate: { type: Object, required: true },
             place: { type: mongoose.Schema.Types.ObjectId, ref: 'Place' },
             author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

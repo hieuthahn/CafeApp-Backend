@@ -12,5 +12,5 @@ db.purpose = require('../v1/purpose/purpose.model')
 db.place = require('../v1/place/place.model')
 db.review = require('../v1/review/review.model')
 db.ROLES = ['user', 'admin', 'moderator']
-db.PAGESIZE = [-1, 1, 2, 3, 6, 8, 10, 20, 30]
+db.PAGESIZE = [-1, 1, 2, 3, 4, 5, 6, 8, 10, 20, 30]
 module.exports = db

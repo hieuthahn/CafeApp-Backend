@@ -1,7 +1,10 @@
 const db = require('../../database')
 const Review = db.review
 const { toSlug, getLatLong } = require('../helpers/utils')
-const { findWithPagination } = require('./review.service')
+const {
+    findWithPagination,
+    findByIdWithPagination,
+} = require('./review.service')
 const PAGESIZE = db.PAGESIZE
 const cloudinary = require('cloudinary').v2
 const { getRateAvg } = require('../helpers/utils')
@@ -90,10 +93,13 @@ exports.findAll = async (req, res) => {
 
 exports.findByPlaceId = async (req, res) => {
     const placeId = req.params?.placeId
-    const { page = 1, pageSize } = req.query
+    const { page = 1, pageSize = 6 } = req.query
 
     try {
         if (placeId.match(/^[0-9a-fA-F]{24}$/)) {
+            const condition = {
+                place: placeId,
+            }
             const result = await findWithPagination(condition, +page, +pageSize)
 
             if (result.data) {
@@ -104,6 +110,7 @@ exports.findByPlaceId = async (req, res) => {
                         totalPages: result.totalPages,
                         currentPage: result.currentPage,
                         pageSize: result.pageSize,
+                        totalItems: result.totalItems,
                     },
                 })
             }
