@@ -1,13 +1,12 @@
 const db = require('../../database')
 const Place = db.place
-const Region = db.region
+const Review = db.review
 const Purpose = db.purpose
-const Tag = db.tag
-const Benefit = db.benefit
 const { toSlug, getLatLong } = require('../helpers/utils')
 const { findWithPagination } = require('./place.service')
 const PAGESIZE = db.PAGESIZE
 const cloudinary = require('cloudinary').v2
+const { getRate } = require('../helpers/utils')
 
 exports.create = async (req, res) => {
     // const { desc, specific } = req.body.address
@@ -96,9 +95,9 @@ exports.findOne = async (req, res) => {
     try {
         let data = []
         if (id.match(/^[0-9a-fA-F]{24}$/)) {
-            data = await Place.findById(id)
+            data = await Place.findById(id).lean()
         } else {
-            data = await Place.find({ slug: id })
+            data = await Place.find({ slug: id }).lean()
         }
 
         if (data?._id) {
@@ -106,6 +105,17 @@ exports.findOne = async (req, res) => {
         }
 
         if (data.length) {
+            const reviews = await Review.find({ place: data[0]?._id })
+            const rate = {
+                avg: getRate(reviews, 'avg'),
+                position: getRate(reviews, 'position'),
+                drink: getRate(reviews, 'drink'),
+                view: getRate(reviews, 'view'),
+                price: getRate(reviews, 'price'),
+                service: getRate(reviews, 'service'),
+                rateCount: reviews.length,
+            }
+            data[0].rate = rate
             return res.status(200).send({ success: true, data: data[0] })
         }
 
@@ -272,7 +282,7 @@ exports.search = async (req, res) => {
 
     try {
         const result = await findWithPagination(filter, +page, +pageSize, sort)
-
+        // console.log(result.data)
         if (result.data) {
             return res.status(200).send({
                 success: true,

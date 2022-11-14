@@ -128,6 +128,19 @@ const getRateAvg = (rate) => {
     return +result || 0
 }
 
+const getRate = (reviews, name = 'position') => {
+    if (reviews.length) {
+        const total = reviews.reduce((total, review) => {
+            return (total = total + review.rate[name])
+        }, 0)
+
+        const result = (total / reviews.length).toFixed(1)
+        return +result || 0
+    } else {
+        return 0
+    }
+}
+
 module.exports = {
     toSlug,
     toLowerCaseTrim,
@@ -135,4 +148,5 @@ module.exports = {
     getLatLong,
     getTotalRateAvg,
     getRateAvg,
+    getRate,
 }
