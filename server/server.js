@@ -75,6 +75,7 @@ require('./src/api/v1/tag/tag.routes')(app)
 require('./src/api/v1/benefit/benefit.routes')(app)
 require('./src/api/v1/place/place.routes')(app)
 require('./src/api/v1/review/review.routes')(app)
+require('./src/api/v1/like/like.routes')(app)
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080
