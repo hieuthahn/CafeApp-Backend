@@ -48,7 +48,7 @@ const initial = () => {
 }
 
 var corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: process.env.CORS_URL || 'http://localhost:3000',
 }
 app.use(cors(corsOptions))
 // parse requests of content-type - application/json

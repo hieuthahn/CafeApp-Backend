@@ -1,5 +1,5 @@
 const controller = require('./place.controller')
-const { authJwt } = require('../middleware')
+const { authJwt, verifyPlace } = require('../middleware')
 const router = require('express').Router()
 const validation = require('./place.validation')
 const uploadCloud = require('../../config/cloundinary.config')
@@ -15,6 +15,7 @@ module.exports = (app) => {
                 { name: 'menu', maxCount: 20 },
             ]),
             validation.checkRequired,
+            verifyPlace.checkDuplicatePlaceNameOrSlug,
         ],
         controller.create,
     )

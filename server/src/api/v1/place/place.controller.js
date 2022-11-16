@@ -9,6 +9,7 @@ const cloudinary = require('cloudinary').v2
 const { getRate } = require('../helpers/utils')
 
 exports.create = async (req, res) => {
+    console.log('run')
     // const { desc, specific } = req.body.address
     // const { lat, lng } = await getLatLong(desc)
     const data = JSON.parse(req.body.data)
