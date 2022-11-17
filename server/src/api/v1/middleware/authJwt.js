@@ -70,9 +70,21 @@ isModerator = (req, res, next) => {
         )
     })
 }
+
+getDataFromToken = (req, res, next) => {
+    let token = req.header('authorization')?.slice(6) || req.session.token
+    if (token) {
+        jwt.verify(token, config.secret, (err, decoded) => {
+            req.userId = decoded.id
+        })
+    }
+    next()
+}
+
 const authJwt = {
     verifyToken,
     isAdmin,
     isModerator,
+    getDataFromToken,
 }
 module.exports = authJwt

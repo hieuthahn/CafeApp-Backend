@@ -54,6 +54,7 @@ exports.create = async (req, res) => {
                 return res.status(200).send({
                     success: true,
                     message: 'Bỏ thích thành công',
+                    type: 'UNLIKE',
                     data,
                 })
             }
@@ -68,6 +69,7 @@ exports.create = async (req, res) => {
                 return res.status(200).send({
                     success: true,
                     message: 'Đã thích',
+                    type: 'LIKE',
                     data,
                 })
             }
@@ -105,15 +107,20 @@ exports.findAll = async (req, res) => {
 
 exports.findByPlaceId = async (req, res) => {
     const placeId = req.params?.placeId
+    condition = {
+        place: placeId,
+    }
 
     try {
         if (placeId.match(/^[0-9a-fA-F]{24}$/)) {
-            const result = await Like.findOne({ place: placeId }).lean()
-            result.likeCount = result.author.length
+            const result = await Like.findOne(condition).lean()
             if (result) {
                 return res.status(200).send({
                     success: true,
-                    data: result,
+                    likeCount: result.author.length,
+                    isLiked: result?.author?.some(
+                        (userId) => req.userId === userId.toString(),
+                    ),
                 })
             }
         } else {
@@ -124,7 +131,7 @@ exports.findByPlaceId = async (req, res) => {
 
         return res
             .status(200)
-            .send({ success: false, message: 'Not found Review with ' + id })
+            .send({ success: false, message: 'Not found Like with ' + placeId })
     } catch (error) {
         return res.status(500).send({ success: false, message: error })
     }

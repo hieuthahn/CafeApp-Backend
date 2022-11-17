@@ -10,7 +10,11 @@ module.exports = (app) => {
     // router.get('/', controller.findAllAndUpdate)
 
     // Retrieve a single Review with id
-    router.get('/:placeId', controller.findByPlaceId)
+    router.get(
+        '/:placeId',
+        [authJwt.getDataFromToken],
+        controller.findByPlaceId,
+    )
 
     app.use('/api/v1/like', router)
 }
