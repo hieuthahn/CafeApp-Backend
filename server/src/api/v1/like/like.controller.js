@@ -29,7 +29,12 @@ exports.create = async (req, res) => {
         if (!placeLikeExisted) {
             const data = await Like.create(like)
             if (data) {
-                return res.status(200).send({ success: true, data })
+                return res.status(200).send({
+                    success: true,
+                    data,
+                    message: 'Đã thích',
+                    type: 'LIKE',
+                })
             }
 
             return res.status(403).send({
@@ -129,9 +134,12 @@ exports.findByPlaceId = async (req, res) => {
                 .send({ success: false, message: 'Id bài viết không hợp lệ' })
         }
 
-        return res
-            .status(200)
-            .send({ success: false, message: 'Not found Like with ' + placeId })
+        return res.status(200).send({
+            success: false,
+            message: 'Not found Like with ' + placeId,
+            likeCount: 0,
+            isLiked: false,
+        })
     } catch (error) {
         return res.status(500).send({ success: false, message: error })
     }

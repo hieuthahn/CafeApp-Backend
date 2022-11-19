@@ -283,7 +283,24 @@ exports.search = async (req, res) => {
 
     try {
         const result = await findWithPagination(filter, +page, +pageSize, sort)
-        // console.log(result.data)
+
+        await Promise.all(
+            result?.data?.map(async (place, index) => {
+                const reviews = await Review.find({ place: place?._id })
+                const rate = {
+                    avg: getRate(reviews, 'avg'),
+                    position: getRate(reviews, 'position'),
+                    drink: getRate(reviews, 'drink'),
+                    view: getRate(reviews, 'view'),
+                    price: getRate(reviews, 'price'),
+                    service: getRate(reviews, 'service'),
+                    rateCount: reviews.length,
+                }
+                place.rate = rate
+                return place
+            }),
+        )
+
         if (result.data) {
             return res.status(200).send({
                 success: true,

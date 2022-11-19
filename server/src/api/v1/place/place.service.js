@@ -24,21 +24,6 @@ module.exports = {
                 .skip((page - 1) * pageSize)
                 .limit(pageSize)
                 .lean()
-
-            data?.forEach(async (place, index) => {
-                const reviews = await Review.find({ place: place?._id })
-                const rate = {
-                    avg: getRate(reviews, 'avg'),
-                    position: getRate(reviews, 'position'),
-                    drink: getRate(reviews, 'drink'),
-                    view: getRate(reviews, 'view'),
-                    price: getRate(reviews, 'price'),
-                    service: getRate(reviews, 'service'),
-                    rateCount: reviews.length,
-                }
-                rates = rate
-                // console.log(rates)
-            })
         }
 
         // data?.forEach((item, index) => (item.rate = rates[index]))
