@@ -14,7 +14,7 @@ module.exports = (app) => {
         controller.create,
     )
     // Retrieve all Reviews
-    router.get('/', controller.findAll)
+    router.get('/', [authJwt.getDataFromToken], controller.findAll)
     // router.get('/', controller.findAllAndUpdate)
 
     // Retrieve a single Review with id

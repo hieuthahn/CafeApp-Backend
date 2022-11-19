@@ -112,6 +112,7 @@ exports.findAll = async (req, res) => {
 
 exports.findByPlaceId = async (req, res) => {
     const placeId = req.params?.placeId
+    const userId = req.userId
     condition = {
         place: placeId,
     }
@@ -129,9 +130,42 @@ exports.findByPlaceId = async (req, res) => {
                 })
             }
         } else {
+            return res.status(400).send({
+                success: false,
+                message: 'Id bài viết không hợp lệ',
+            })
+        }
+
+        return res.status(200).send({
+            success: false,
+            message: 'Not found Like with ' + placeId,
+            likeCount: 0,
+            isLiked: false,
+        })
+    } catch (error) {
+        return res.status(500).send({ success: false, message: error })
+    }
+}
+
+exports.findByUserId = async (req, res) => {
+    const userId = req.userId
+    condition = {
+        author: { $in: userId },
+    }
+
+    try {
+        if (userId.match(/^[0-9a-fA-F]{24}$/)) {
+            const result = await Like.find(condition).populate('place')
+            if (result) {
+                return res.status(200).send({
+                    success: true,
+                    data: result,
+                })
+            }
+        } else {
             return res
                 .status(400)
-                .send({ success: false, message: 'Id bài viết không hợp lệ' })
+                .send({ success: false, message: 'userId không hợp lệ' })
         }
 
         return res.status(200).send({

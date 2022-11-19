@@ -14,6 +14,7 @@ module.exports = {
         } else {
             data = await Review.find(condition)
                 .populate('author', ['-password', '-email'])
+                .populate('place')
                 .sort(sort)
                 .skip((page - 1) * pageSize)
                 .limit(pageSize)
@@ -27,6 +28,7 @@ module.exports = {
             currentPage: page,
             pageSize: pageSize,
             totalItems,
+            totalPages,
         }
     },
     findByIdWithPagination: async (id, page = 1, pageSize = 2, sort) => {

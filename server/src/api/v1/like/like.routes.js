@@ -6,7 +6,7 @@ module.exports = (app) => {
     // Create a new Review
     router.post('/:placeId', [authJwt.verifyToken], controller.create)
     // Retrieve all Reviews
-    router.get('/', controller.findAll)
+    router.get('/', [authJwt.getDataFromToken], controller.findByUserId)
     // router.get('/', controller.findAllAndUpdate)
 
     // Retrieve a single Review with id
@@ -15,6 +15,8 @@ module.exports = (app) => {
         [authJwt.getDataFromToken],
         controller.findByPlaceId,
     )
+
+    router.get('/profile', [authJwt.getDataFromToken], controller.findByUserId)
 
     app.use('/api/v1/like', router)
 }

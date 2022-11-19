@@ -60,10 +60,9 @@ exports.create = async (req, res) => {
 
 exports.findAll = async (req, res) => {
     const name = req.query.name
+    const userId = req.userId
     const { page = 1, pageSize } = req.query
-    const condition = name
-        ? { name: { $regex: new RegExp(name), $options: 'i' } }
-        : {}
+    const condition = userId ? { author: userId } : {}
     try {
         const result = await findWithPagination(condition, +page, +pageSize)
 
@@ -75,6 +74,8 @@ exports.findAll = async (req, res) => {
                     totalPages: res.totalPages,
                     currentPage: result.currentPage,
                     pageSize: result.pageSize,
+                    totalItems: result.totalItems,
+                    totalPages: result.totalPages,
                 },
             })
         }
@@ -175,9 +176,17 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
     const id = req.params.id
+    const userId = req.userId
     const files = req.query?.files || []
     try {
-        const data = await Review.findByIdAndRemove(id)
+        const review = await Review.findById(id)
+        if (review.author.toString() !== userId) {
+            return res.status(200).send({
+                success: false,
+                message: 'Bạn không phải tác giả của đánh giá này',
+            })
+        }
+        const data = await Review.findByIdAndRemove(id, { author: userId })
         if (files.length) {
             cloudinary.api.delete_resources(files, (err, result) =>
                 console.log(err, result),
@@ -187,12 +196,12 @@ exports.delete = async (req, res) => {
         if (data) {
             return res.status(200).send({
                 success: true,
-                message: 'Review was deleted successfully!',
+                message: 'Xóa đánh giá thành công',
             })
         }
         return res.status(404).send({
             success: false,
-            message: `Can not delete Review with id=${id}.`,
+            message: `Xóa đánh giá thất bại ${id}.`,
         })
     } catch (error) {
         return res
