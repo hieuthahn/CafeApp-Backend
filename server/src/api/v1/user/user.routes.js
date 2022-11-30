@@ -12,7 +12,11 @@ module.exports = (app) => {
         next()
     })
 
-    router.get('/all', controller.allAccess)
+    router.get(
+        '/all',
+        [authJwt.verifyToken, authJwt.isAdmin],
+        controller.findAllByAdmin,
+    )
     router.get('/', [authJwt.verifyToken], controller.findOne)
     router.get(
         '/mod',
