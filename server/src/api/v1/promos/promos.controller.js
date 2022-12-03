@@ -25,11 +25,6 @@ exports.create = async (req, res) => {
           }))
         : []
 
-    if (data?.rate) {
-        const avg = getRateAvg(data.rate)
-        data.rate.avg = avg
-    }
-
     const promos = new Promos({
         ...data,
         author: req?.userId,
