@@ -127,7 +127,7 @@ exports.findByPlaceId = async (req, res) => {
 
 exports.update = async (req, res) => {
     const data = req.body?.data ? JSON.parse(req.body.data) : {}
-    const photos =
+    const images =
         req?.files?.photo &&
         req.files.photo.map((image) => ({
             url: image?.path,
@@ -145,8 +145,8 @@ exports.update = async (req, res) => {
         data.rate.avg = avg
     }
 
-    if (photos) {
-        body.photos = photos
+    if (images) {
+        body.images = images
     }
     const files = req.query?.files || []
 
