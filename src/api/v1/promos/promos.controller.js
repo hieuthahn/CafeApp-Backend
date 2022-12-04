@@ -51,9 +51,8 @@ exports.create = async (req, res) => {
 
 exports.findAll = async (req, res) => {
     const name = req.query.name
-    const userId = req.userId
     const { page = 1, pageSize } = req.query
-    const condition = userId ? { author: userId } : {}
+    const condition = {}
     try {
         const result = await findWithPagination(condition, +page, +pageSize)
 

@@ -31,7 +31,11 @@ module.exports = (app) => {
         controller.update,
     )
     // Delete a Review with id
-    router.delete('/:id', [authJwt.verifyToken], controller.delete)
+    router.delete(
+        '/:id',
+        [authJwt.verifyToken, authJwt.isAdmin],
+        controller.delete,
+    )
     // Create a new Review
     router.delete(
         '/',
