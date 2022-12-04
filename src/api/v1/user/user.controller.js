@@ -1,5 +1,6 @@
 const db = require('../../database')
 const User = db.user
+const Role = db.role
 const { toSlug } = require('../helpers/utils')
 const bcrypt = require('bcrypt')
 const { findWithPagination } = require('./user.service')
@@ -8,6 +9,72 @@ exports.update = async (req, res) => {
     try {
         if (!req.body.password) {
             const data = await User.findByIdAndUpdate(req.userId, req.body, {
+                fields: ['-password'],
+                useFindAndModify: false,
+            }).populate('roles', ['name'])
+
+            if (data) {
+                return res.status(200).send({
+                    success: true,
+                    message: 'Cập nhật profile thành công',
+                    data,
+                })
+            }
+        } else {
+            const user = await User.findById(req.userId)
+            const passwordIsValid = bcrypt.compareSync(
+                req.body.password.old,
+                user.password,
+            )
+            if (!passwordIsValid) {
+                return res.status(400).send({
+                    success: false,
+                    message: 'Mật khẩu hiện tại không chính xác',
+                })
+            }
+            if (req.body.password.confirm !== req.body.password.new) {
+                return res.status(400).send({
+                    success: false,
+                    message: 'Nhập lại mật khẩu không chính xác',
+                })
+            }
+            const body = {
+                password: bcrypt.hashSync(req.body.password.new, 8),
+            }
+            const data = await User.findByIdAndUpdate(req.userId, body, {
+                useFindAndModify: false,
+            })
+
+            if (data) {
+                return res.status(200).send({
+                    success: true,
+                    message: 'Cập nhật profile thành công',
+                })
+            }
+        }
+
+        return res
+            .status(403)
+            .send({ success: false, message: 'Lưu profile không thành công' })
+    } catch (error) {
+        return res
+            .status(500)
+            .send({ success: false, message: 'Internal server error ' + error })
+    }
+}
+
+exports.updateByAdmin = async (req, res) => {
+    const profileId = req.params.id
+    try {
+        if (!req.body.password) {
+            if (req.body.roles[0]) {
+                const roles = await Role.find()
+                const newRole = roles.filter((role) => {
+                    return req.body.roles[0].name === role.name
+                })
+                req.body.roles[0] = newRole[0]._id
+            }
+            const data = await User.findByIdAndUpdate(profileId, req.body, {
                 fields: ['-password'],
                 useFindAndModify: false,
             }).populate('roles', ['name'])
@@ -167,43 +234,19 @@ exports.findAllByAdmin = async (req, res) => {
     }
 }
 
-exports.updateByAdmin = async (req, res) => {
-    const data = req.body?.data ? JSON.parse(req.body.data) : {}
-    const photos =
-        req?.files?.photo &&
-        req.files.photo.map((image) => ({
-            url: image?.path,
-            filename: image?.filename,
-            originalName: image?.originalname,
-            size: image?.size,
-        }))
-
+exports.deleteById = async (req, res) => {
     const id = req.params.id
-    const body = {
-        ...data,
-    }
-    if (data?.rate) {
-        const avg = getRateAvg(data.rate)
-        data.rate.avg = avg
-    }
-
-    if (photos) {
-        body.photos = photos
-    }
-
     try {
-        const data = await Review.findByIdAndUpdate(id, body, {
-            useFindAndModify: false,
-        })
+        const data = await User.findByIdAndRemove(id)
         if (data) {
             return res.status(200).send({
                 success: true,
-                message: 'Review was updated successfully.',
+                message: 'Xóa người dùng thành công!',
             })
         }
         return res.status(404).send({
             success: false,
-            message: `Can not update Review with id=${id}.`,
+            message: `Không thể xóa người dùng, id=${id}.`,
         })
     } catch (error) {
         return res

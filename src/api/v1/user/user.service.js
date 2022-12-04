@@ -10,9 +10,13 @@ module.exports = {
         let data = []
         const totalItems = await User.find(condition).count()
         if (pageSize === -1) {
-            data = await User.find(condition).populate('roles').sort(sort)
+            data = await User.find(condition)
+                .select(['-password'])
+                .populate('roles')
+                .sort(sort)
         } else {
-            data = await Review.find(condition)
+            data = await User.find(condition)
+                .select(['-password'])
                 .populate('roles')
                 .sort(sort)
                 .skip((page - 1) * pageSize)

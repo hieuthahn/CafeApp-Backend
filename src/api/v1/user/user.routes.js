@@ -31,6 +31,16 @@ module.exports = (app) => {
 
     router.put('/', [authJwt.verifyToken], controller.update)
     router.put(
+        '/:id',
+        [authJwt.verifyToken, authJwt.isAdmin],
+        controller.updateByAdmin,
+    )
+    router.delete(
+        '/:id',
+        [authJwt.verifyToken, authJwt.isAdmin],
+        controller.deleteById,
+    )
+    router.put(
         '/avatar',
         [
             authJwt.verifyToken,

@@ -26,8 +26,6 @@ module.exports = {
                 .lean()
         }
 
-        // data?.forEach((item, index) => (item.rate = rates[index]))
-        // console.log(rates)
         const totalPages = Math.ceil(+totalItems / pageSize)
 
         return {
