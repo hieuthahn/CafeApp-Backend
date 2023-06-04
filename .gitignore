@@ -1,2 +1,6 @@
-/node_modules/
+/node_modules
 request.http
+
+# local env files
+.env
+.env*.local
